@@ -60,7 +60,7 @@ import org.springframework.util.StringUtils;
  * @see OAuth2AuthorizationEndpointFilter
  */
 public final class OAuth2AuthorizationEndpointConfigurer extends AbstractOAuth2Configurer {
-
+	//OAuth2AuthorizationEndpointFilter的默认配置
 	private RequestMatcher requestMatcher;
 
 	private final List<AuthenticationConverter> authorizationRequestConverters = new ArrayList<>();
