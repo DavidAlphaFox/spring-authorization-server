@@ -557,7 +557,7 @@ public class OAuth2Authorization implements Serializable {
 
 			OAuth2Authorization authorization = new OAuth2Authorization();
 			if (!StringUtils.hasText(this.id)) {
-				this.id = UUID.randomUUID().toString();
+				this.id = UUID.randomUUID().toString(); //id不存在的时候会生成一个随机的ID
 			}
 			authorization.id = this.id;
 			authorization.registeredClientId = this.registeredClientId;

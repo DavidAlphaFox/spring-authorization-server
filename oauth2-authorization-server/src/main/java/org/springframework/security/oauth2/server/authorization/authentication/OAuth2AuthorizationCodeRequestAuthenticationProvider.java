@@ -78,7 +78,7 @@ import org.springframework.util.StringUtils;
  * Authentication Request</a>
  */
 public final class OAuth2AuthorizationCodeRequestAuthenticationProvider implements AuthenticationProvider {
-
+	//认证过程：这个 Token 被发送到 AuthenticationManager，最终由该类进行处理
 	private static final String ERROR_URI = "https://datatracker.ietf.org/doc/html/rfc6749#section-4.1.2.1";
 
 	private static final OAuth2TokenType STATE_TOKEN_TYPE = new OAuth2TokenType(OAuth2ParameterNames.STATE);
@@ -172,7 +172,7 @@ public final class OAuth2AuthorizationCodeRequestAuthenticationProvider implemen
 					authorizationRequest.getRedirectUri(), authorizationRequest.getState(),
 					authorizationRequest.getScopes(), authorizationRequest.getAdditionalParameters());
 		}
-
+		//找到注册的客户端
 		RegisteredClient registeredClient = this.registeredClientRepository
 			.findByClientId(authorizationCodeRequestAuthentication.getClientId());
 		if (registeredClient == null) {
@@ -188,7 +188,7 @@ public final class OAuth2AuthorizationCodeRequestAuthenticationProvider implemen
 			.with(authorizationCodeRequestAuthentication)
 			.registeredClient(registeredClient);
 		OAuth2AuthorizationCodeRequestAuthenticationContext authenticationContext = authenticationContextBuilder
-			.build();
+			.build();//构建了一个OAuth2的Code认证请求上下文
 
 		// grant_type
 		OAuth2AuthorizationCodeRequestAuthenticationValidator.DEFAULT_AUTHORIZATION_GRANT_TYPE_VALIDATOR
@@ -233,7 +233,7 @@ public final class OAuth2AuthorizationCodeRequestAuthenticationProvider implemen
 			// Return the authorization request as-is where isAuthenticated() is false
 			return authorizationCodeRequestAuthentication;
 		}
-
+		//构建一个authorizationRequest
 		OAuth2AuthorizationRequest authorizationRequest = OAuth2AuthorizationRequest.authorizationCode()
 			.authorizationUri(authorizationCodeRequestAuthentication.getAuthorizationUri())
 			.clientId(registeredClient.getClientId())
@@ -249,7 +249,7 @@ public final class OAuth2AuthorizationCodeRequestAuthenticationProvider implemen
 		if (currentAuthorizationConsent != null) {
 			authenticationContextBuilder.authorizationConsent(currentAuthorizationConsent);
 		}
-
+		//需要授权页面，才进入这个分支
 		if (this.authorizationConsentRequired.test(authenticationContextBuilder.build())) {
 			if (promptValues.contains(OidcPrompt.NONE)) {
 				// Return an error instead of displaying the consent page
@@ -264,7 +264,7 @@ public final class OAuth2AuthorizationCodeRequestAuthenticationProvider implemen
 			if (this.logger.isTraceEnabled()) {
 				this.logger.trace("Generated authorization consent state");
 			}
-
+			//保存认证
 			this.authorizationService.save(authorization);
 
 			if (this.logger.isTraceEnabled()) {
@@ -404,13 +404,13 @@ public final class OAuth2AuthorizationCodeRequestAuthenticationProvider implemen
 		if (authenticationContext.getAuthorizationRequest().getScopes().contains(OidcScopes.OPENID)
 				&& authenticationContext.getAuthorizationRequest().getScopes().size() == 1) {
 			return false;
-		}
+		} //如果是包含了OpenID，就不需要许可页面
 
 		if (authenticationContext.getAuthorizationConsent() != null && authenticationContext.getAuthorizationConsent()
 			.getScopes()
 			.containsAll(authenticationContext.getAuthorizationRequest().getScopes())) {
 			return false;
-		}
+		} //认证过，切包含了所有的scope
 
 		return true;
 	}
