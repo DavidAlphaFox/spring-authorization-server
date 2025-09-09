@@ -177,7 +177,7 @@ public final class OAuth2AuthorizationEndpointFilter extends OncePerRequestFilte
 				authenticationToken.setDetails(this.authenticationDetailsSource.buildDetails(request));
 			}
 			Authentication authenticationResult = this.authenticationManager.authenticate(authentication);
-
+			//认证失败了
 			if (!authenticationResult.isAuthenticated()) {
 				// If the Principal (Resource Owner) is not authenticated then pass
 				// through the chain
@@ -186,14 +186,14 @@ public final class OAuth2AuthorizationEndpointFilter extends OncePerRequestFilte
 				filterChain.doFilter(request, response);
 				return;
 			}
-
+			//模式检查并直接转成authorizationConsentAuthenticationToken
 			if (authenticationResult instanceof OAuth2AuthorizationConsentAuthenticationToken authorizationConsentAuthenticationToken) {
 				if (this.logger.isTraceEnabled()) {
 					this.logger.trace("Authorization consent is required");
 				}
 				sendAuthorizationConsent(request, response,
 						(OAuth2AuthorizationCodeRequestAuthenticationToken) authentication,
-						authorizationConsentAuthenticationToken);
+						authorizationConsentAuthenticationToken); //发送Consent到客户端
 				return;
 			}
 
@@ -290,26 +290,26 @@ public final class OAuth2AuthorizationEndpointFilter extends OncePerRequestFilte
 			OAuth2AuthorizationCodeRequestAuthenticationToken authorizationCodeRequestAuthentication,
 			OAuth2AuthorizationConsentAuthenticationToken authorizationConsentAuthentication) throws IOException {
 
-		String clientId = authorizationConsentAuthentication.getClientId();
-		Authentication principal = (Authentication) authorizationConsentAuthentication.getPrincipal();
+		String clientId = authorizationConsentAuthentication.getClientId();//获取ClientID
+		Authentication principal = (Authentication) authorizationConsentAuthentication.getPrincipal();//获取认证实体
 		Set<String> requestedScopes = authorizationCodeRequestAuthentication.getScopes();
 		Set<String> authorizedScopes = authorizationConsentAuthentication.getScopes();
 		String state = authorizationConsentAuthentication.getState();
 
-		if (hasConsentUri()) {
+		if (hasConsentUri()) { //存在ConsentURL
 			String redirectUri = UriComponentsBuilder.fromUriString(resolveConsentUri(request))
 				.queryParam(OAuth2ParameterNames.SCOPE, String.join(" ", requestedScopes))
 				.queryParam(OAuth2ParameterNames.CLIENT_ID, clientId)
 				.queryParam(OAuth2ParameterNames.STATE, state)
-				.toUriString();
-			this.redirectStrategy.sendRedirect(request, response, redirectUri);
+				.toUriString(); //构建回调URL
+			this.redirectStrategy.sendRedirect(request, response, redirectUri); //使用重定向策略进行重定向
 		}
 		else {
 			if (this.logger.isTraceEnabled()) {
 				this.logger.trace("Displaying generated consent screen");
 			}
 			DefaultConsentPage.displayConsent(request, response, clientId, principal, requestedScopes, authorizedScopes,
-					state, Collections.emptyMap());
+					state, Collections.emptyMap());//否则显示默认的Consent页面
 		}
 	}
 
