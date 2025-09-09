@@ -172,7 +172,7 @@ public final class OAuth2AuthorizationEndpointFilter extends OncePerRequestFilte
 		}
 
 		try {
-			Authentication authentication = this.authenticationConverter.convert(request);
+			Authentication authentication = this.authenticationConverter.convert(request); //将请求转化成Authentication
 			if (authentication instanceof AbstractAuthenticationToken authenticationToken) {
 				authenticationToken.setDetails(this.authenticationDetailsSource.buildDetails(request));
 			}
